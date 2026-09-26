@@ -151,7 +151,7 @@ export function StageColumn({
         <div className="border-b border-border px-3 py-1.5 text-[11px] tabular-nums text-text-muted">
           {formatCents(totalCents, moedaDoTotal)}
           {ponderadoCents !== null && (
-            <span className="ml-2 text-text-muted/80">
+            <span className="ml-2">
               · {t("ponderado")} {formatCents(ponderadoCents, moedaDoTotal)}
             </span>
           )}
