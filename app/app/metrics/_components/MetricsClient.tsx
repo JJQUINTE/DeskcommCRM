@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { useAttendantMetrics, type AttendantMetric } from "@/hooks/metrics/useAttendantMetrics";
 import { AtritoPanel } from "./AtritoPanel";
+import { PerdasPanel } from "./PerdasPanel";
 import { useTeamMembers } from "@/hooks/team/useTeamMembers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -88,6 +89,10 @@ export function MetricsClient({ canCompare, currentUserId }: Props) {
           Não filtra por atendente — atrito é propriedade do sistema, e quebrá-lo
           por pessoa convida a otimização local que degrada o todo. */}
       <AtritoPanel podeEditarRegua={canCompare} />
+
+      {/* Relatório "Perdas" (#1537): manager+, porque é o funil inteiro — o
+          mesmo critério do /metrics para quem compara. */}
+      {canCompare ? <PerdasPanel /> : null}
 
       <Card>
         <CardHeader>
