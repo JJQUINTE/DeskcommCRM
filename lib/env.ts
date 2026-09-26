@@ -410,6 +410,14 @@ const schema = z.object({
    */
   JEV_OBSERVACOES_RETENTION_DAYS: z.string().optional().default(""),
   /**
+   * Rascunho sugerido por integração JÁ VENCIDO (`conversation_drafts`,
+   * migration 0419, issue #1686). `z.string()` pela MESMA razão das irmãs
+   * acima — quem interpreta é `lib/retencao/politica.ts`, onde lixo resolve
+   * para o lado seguro. Padrão 30, piso 7, contados do `expires_at` (a linha
+   * só responde enquanto a janela dela está aberta).
+   */
+  DRAFT_RETENTION_DAYS: z.string().optional().default(""),
+  /**
    * Candidatos ao golden set (migration 0428, issue #1695): rótulo de near-miss
    * e de divergência, sem texto de cliente. `z.string()` pela MESMA razão das
    * irmãs acima — quem interpreta é `lib/retencao/politica.ts`. Padrão 90, piso

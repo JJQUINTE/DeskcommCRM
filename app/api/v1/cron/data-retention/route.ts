@@ -74,6 +74,8 @@ import {
   RETENCAO_PASSAGEM_DIAS_PISO,
   RETENCAO_PROSPECCAO_DIAS_PADRAO,
   RETENCAO_PROSPECCAO_DIAS_PISO,
+  RETENCAO_RASCUNHO_DIAS_PADRAO,
+  RETENCAO_RASCUNHO_DIAS_PISO,
   interpretarRetencao,
 } from "@/lib/retencao/politica";
 import {
@@ -134,6 +136,11 @@ export interface ResultadoDaRetencao {
   observacoes_do_jev_apagadas: number;
   lotes_observacoes_do_jev: number;
   observacoes_do_jev_tem_resto: boolean;
+  /** O rascunho sugerido por integração já vencido (migration 0419, issue #1686). */
+  rascunhos_apagados: number;
+  lotes_rascunhos: number;
+  rascunhos_tem_resto: boolean;
+  retencao_rascunho_dias: number;
   /** O candidato ao golden set vencido — rótulo, sem texto de cliente (0428). */
   candidatos_do_golden_apagados: number;
   lotes_candidatos_do_golden: number;
@@ -166,6 +173,17 @@ export interface PodaDb {
       | "fn_expurgar_observacoes_do_jev"
       | "fn_expurgar_candidatos_do_golden",
     args: { p_retencao_dias: number; p_limite: number },
+  ): Promise<{ data: number | null; error: { message: string } | null }>;
+  /**
+   * A DÉCIMA poda é a única que não é `security definer`: a tabela 0419 nunca
+   * teve função de expurgo, então o corte (`expires_at` mais velho que o prazo)
+   * é calculado em TypeScript e chega AQUI pronto — a mesma exceção declarada
+   * para a captação em `lib/retencao/politica.ts`. Mesmo contrato de retorno do
+   * `rpc`: contagem ou erro, nunca silêncio.
+   */
+  apagarRascunhos(
+    vencidosAntesDe: string,
+    lote: number,
   ): Promise<{ data: number | null; error: { message: string } | null }>;
 }
 
@@ -203,6 +221,38 @@ async function drenar(
 }
 
 /**
+ * A décima poda (issue #1686): o rascunho sugerido por integração já vencido.
+ *
+ * Mesmo laço de `drenar` — par no lote incompleto, teto por invocação, `temResto`
+ * quando o teto fecha — e a MESMA regra de erro: sobe. O que é diferente é a
+ * origem do corte, e ela é o motivo deste helper existir em vez de mais uma
+ * entrada na união do `rpc`: `conversation_drafts` não tem função de expurgo,
+ * então `p_retencao_dias` não existe para onde ir, e o corte nasce aqui,
+ * já convertido em instante absoluto (`expires_at` mais velho que o prazo).
+ *
+ * O relógio é `expires_at`, nunca `created_at` (como o espelho da agenda corta
+ * por `ends_at`): uma janela de 72 h pede 72 h de janela, e cortar pela criação
+ * apagaria rascunho que AINDA ABRIRIA o link.
+ */
+async function drenarRascunhos(
+  db: PodaDb,
+  dias: number,
+): Promise<{ apagadas: number; lotes: number; temResto: boolean }> {
+  const corte = new Date(Date.now() - dias * 86_400_000).toISOString();
+  let apagadas = 0;
+  let lotes = 0;
+  for (let i = 0; i < MAX_LOTES; i += 1) {
+    const { data, error } = await db.apagarRascunhos(corte, TAMANHO_DO_LOTE);
+    if (error) throw new Error(`conversation_drafts: ${error.message}`);
+    const n = data ?? 0;
+    lotes += 1;
+    apagadas += n;
+    if (n < TAMANHO_DO_LOTE) return { apagadas, lotes, temResto: false };
+  }
+  return { apagadas, lotes, temResto: true };
+}
+
+/**
  * Separado do handler HTTP para o teste exercitar a REGRA (o laço de lotes, o
  * teto, o corte no lote incompleto) sem montar request/auth — mesmo desenho de
  * `recoverStuckMessages`.
@@ -218,6 +268,7 @@ export async function podarHistorico(
     CASE_ALERT_RETENTION_DAYS?: string;
     PROSPECCAO_RETENTION_DAYS?: string;
     JEV_OBSERVACOES_RETENTION_DAYS?: string;
+    DRAFT_RETENTION_DAYS?: string;
     GOLDEN_CANDIDATES_RETENTION_DAYS?: string;
   },
 ): Promise<ResultadoDaRetencao> {
@@ -268,6 +319,12 @@ export async function podarHistorico(
     piso: RETENCAO_OBSERVACOES_DO_JEV_DIAS_PISO,
   });
 
+  const rascunho = interpretarRetencao(ambiente.DRAFT_RETENTION_DAYS, {
+    chave: "DRAFT_RETENTION_DAYS",
+    padrao: RETENCAO_RASCUNHO_DIAS_PADRAO,
+    piso: RETENCAO_RASCUNHO_DIAS_PISO,
+  });
+
   const candidatosDoGolden = interpretarRetencao(ambiente.GOLDEN_CANDIDATES_RETENTION_DAYS, {
     chave: "GOLDEN_CANDIDATES_RETENTION_DAYS",
     padrao: RETENCAO_CANDIDATOS_GOLDEN_DIAS_PADRAO,
@@ -309,8 +366,13 @@ export async function podarHistorico(
   // Nona poda: as observações do Jev (0421). Padrão 90 / piso 30, a janela da
   // concordância que o cartão mostra — o piso mora no CORPO da função.
   const observacoesDrenadas = await drenar(db, "fn_expurgar_observacoes_do_jev", observacoesDoJev.dias);
-  // Décima poda: o candidato ao golden set (0428, issue #1695). Padrão 90 /
-  // piso 30, a janela em que o near-miss ainda é curável — o piso mora no
+  // Décima poda: o rascunho sugerido por integração já VENCIDO (migration 0419,
+  // issue #1686). A única que não passa pelo `rpc` — a tabela 0419 não tem
+  // função de expurgo, e o corte (`expires_at` + prazo) nasce em TypeScript,
+  // mesma exceção da captação. Piso de 7 dias mora AQUI, no interpretador.
+  const rascunhosDrenados = await drenarRascunhos(db, rascunho.dias);
+  // Décima primeira poda: o candidato ao golden set (0428, issue #1695).
+  // Padrão 90 / piso 30, a janela em que o near-miss ainda é curável — o piso mora no
   // CORPO da função, como nas irmãs. A linha é rótulo, sem texto de cliente.
   const candidatosDrenados = await drenar(db, "fn_expurgar_candidatos_do_golden", candidatosDoGolden.dias);
 
@@ -342,6 +404,9 @@ export async function podarHistorico(
     avisos_de_caso_tem_resto: avisosDeCaso.temResto,
     prospeccao_tem_resto: prospeccaoDrenada.temResto,
     observacoes_do_jev_tem_resto: observacoesDrenadas.temResto,
+    rascunhos_apagados: rascunhosDrenados.apagadas,
+    lotes_rascunhos: rascunhosDrenados.lotes,
+    rascunhos_tem_resto: rascunhosDrenados.temResto,
     candidatos_do_golden_tem_resto: candidatosDrenados.temResto,
     retencao_fila_dias: fila.dias,
     retencao_auditoria_dias: auditoria.dias,
@@ -351,6 +416,7 @@ export async function podarHistorico(
     retencao_aviso_de_caso_dias: avisoDeCaso.dias,
     retencao_prospeccao_dias: prospeccao.dias,
     retencao_observacoes_do_jev_dias: observacoesDoJev.dias,
+    retencao_rascunho_dias: rascunho.dias,
     retencao_candidatos_do_golden_dias: candidatosDoGolden.dias,
     avisos: [
       fila.aviso,
@@ -361,6 +427,7 @@ export async function podarHistorico(
       avisoDeCaso.aviso,
       prospeccao.aviso,
       observacoesDoJev.aviso,
+      rascunho.aviso,
       candidatosDoGolden.aviso,
     ].filter((a): a is string => a !== null),
   };
@@ -403,9 +470,14 @@ export function houveEfeito(resultado: ResultadoDaRetencao): boolean {
     // A nona, pela mesma razão: poda que apagou sem deixar trilha é
     // encolhimento silencioso.
     resultado.observacoes_do_jev_apagadas > 0 ||
-    // A décima, pela mesma razão das nove: uma rodada que só apagou candidato
-    // ao golden set vencido apagaria linha sem deixar registro — encolhimento
-    // silencioso.
+    // A décima, pela mesma razão das nove anteriores: uma rodada que só apagou
+    // rascunho vencido apagaria linhas e não deixaria registro. E esta é a
+    // única que apaga TEXTO escrito para uma pessoa — silenciar aqui seria
+    // apagar dado pessoal sem trilha.
+    resultado.rascunhos_apagados > 0 ||
+    // A décima primeira, pela mesma razão das dez: uma rodada que só apagou
+    // candidato ao golden set vencido apagaria linha sem deixar registro —
+    // encolhimento silencioso.
     resultado.candidatos_do_golden_apagados > 0
   );
 }
@@ -435,6 +507,22 @@ async function handle(req: NextRequest): Promise<Response> {
         const { data, error } = await admin.rpc(nome as never, args as never);
         return { data: typeof data === "number" ? data : null, error };
       },
+      // A décima poda: DELETE do admin client, sem função de expurgo no banco.
+      // Lote curto, transação fechada a cada rodada, e o retorno `select("id")`
+      // é a CONTAGEM que o relatório e `houveEfeito` usam. O `.order("id")` NÃO
+      // é enfeite: o PostgREST 12.2 recusa `limit` sem `order` num DELETE
+      // (400 PGRST109), e aqui o erro sobe e derruba a rodada inteira,
+      // inclusive a retomada da cascata de LGPD que vem depois.
+      async apagarRascunhos(vencidosAntesDe, lote) {
+        const { data, error } = await admin
+          .from("conversation_drafts")
+          .delete()
+          .lt("expires_at", vencidosAntesDe)
+          .select("id")
+          .order("id")
+          .limit(lote);
+        return { data: Array.isArray(data) ? data.length : null, error };
+      },
     };
     resultado = await podarHistorico(db, {
       JOB_QUEUE_RETENTION_DAYS: env.JOB_QUEUE_RETENTION_DAYS,
@@ -444,6 +532,7 @@ async function handle(req: NextRequest): Promise<Response> {
       CASE_ALERT_RETENTION_DAYS: env.CASE_ALERT_RETENTION_DAYS,
       PROSPECCAO_RETENTION_DAYS: env.PROSPECCAO_RETENTION_DAYS,
       JEV_OBSERVACOES_RETENTION_DAYS: env.JEV_OBSERVACOES_RETENTION_DAYS,
+      DRAFT_RETENTION_DAYS: env.DRAFT_RETENTION_DAYS,
       GOLDEN_CANDIDATES_RETENTION_DAYS: env.GOLDEN_CANDIDATES_RETENTION_DAYS,
     });
     // ── A cascata de anonimização que ficou pela metade ──────────────────
