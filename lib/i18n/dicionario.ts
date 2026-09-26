@@ -12402,6 +12402,34 @@ export const DICIONARIO: Traducoes = {
   "Comandos pelo celular ligados — já valem no próximo atendimento.":
     { es: "Comandos desde el celular activados — ya valen en la próxima atención." },
   "Comandos pelo celular desligados.": { es: "Comandos desde el celular desactivados." },
+  // ─── PREVISÃO PONDERADA DO FUNIL (issue #1535) ───
+  "Previsão": { es: "Previsión" },
+  "Ponderado": { es: "Ponderado" },
+  "Bruto": { es: "Bruto" },
+  "bruto": { es: "bruto" },
+  "Negócios": { es: "Negocios" },
+  "Chance de fechamento (0 a 100)": { es: "Probabilidad de cierre (0 a 100)" },
+  "A chance de fechamento vai de 0 a 100.": { es: "La probabilidad de cierre va de 0 a 100." },
+  "Etapa de fechamento ou de perda: a chance vale 100 e 0 na regra, sem calibração.": {
+    es: "Etapa de cierre o de pérdida: la probabilidad vale 100 y 0 en la regla, sin calibración.",
+  },
+  "Chance de fechamento definida em cada etapa do funil.": {
+    es: "Probabilidad de cierre definida en cada etapa del embudo.",
+  },
+  "Chance vinda da inteligência artificial quando existe, e da etapa quando não.": {
+    es: "Probabilidad que viene de la inteligencia artificial cuando existe, y de la etapa cuando no.",
+  },
+  "Nenhum negócio aberto com valor neste funil.": {
+    es: "Ningún negocio abierto con valor en este embudo.",
+  },
+  "Sem data prevista — entram, mas sem mês no cronograma": {
+    es: "Sin fecha prevista — entran, pero sin mes en el cronograma.",
+  },
+  "Sem chance definida na etapa — falta calibrar": {
+    es: "Sin probabilidad definida en la etapa — falta calibrar.",
+  },
+  "Erro ao carregar a previsão.": { es: "Error al cargar la previsión." },
+  "Falha ao calcular a previsão do funil.": { es: "No se pudo calcular la previsión del embudo." },
 };
 
 /**
