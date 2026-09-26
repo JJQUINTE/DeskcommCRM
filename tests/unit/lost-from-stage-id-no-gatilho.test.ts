@@ -77,7 +77,10 @@ describe("lost_from_stage_id gravado pelo gatilho (#1537)", () => {
     expect(MIGRATION).toContain("add column if not exists lost_from_stage_id uuid");
     expect(BASELINE).toContain("add column if not exists lost_from_stage_id uuid");
     expect(MANIFEST).toContain("0426_motivo_de_perda_com_categoria");
-    expect(TIPOS.match(/lost_from_stage_id/g) ?? []).toHaveLength(3);
+    // Row, Insert e Update; e a FK em Relationships, que é o que o PostgREST vê
+    // — a segunda FK para `crm_stages` torna ambíguo o embed sem dica.
+    expect(TIPOS.match(/lost_from_stage_id\??:/g) ?? []).toHaveLength(3);
+    expect(TIPOS).toContain('foreignKeyName: "fk_crm_leads_lost_from_stage"');
   });
 
   it("o trigger de validação lê o RÓTULO dos dois formatos de lost_reasons", () => {

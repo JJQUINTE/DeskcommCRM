@@ -4789,6 +4789,13 @@ export type Database = {
             referencedRelation: "crm_stages"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_crm_leads_lost_from_stage"
+            columns: ["lost_from_stage_id"]
+            isOneToOne: false
+            referencedRelation: "crm_stages"
+            referencedColumns: ["id"]
+          },
         ]
       }
       crm_pipelines: {
