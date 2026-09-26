@@ -45,6 +45,16 @@ export const TOOLS_FUNIL = declararTools([
     pacotes: ["vender", "organizar"],
   },
   {
+    name: "crm_get_pipeline_forecast",
+    category: "read",
+    rotulo: "Ver a previsão do funil",
+    explicacao:
+      "Mostra quanto deve entrar e quando: os negócios abertos somados por moeda e por mês, com a chance de fechamento que cada etapa tem, e à parte o que ainda não tem data nem chance definida.",
+    oQueToca: "Funil de vendas",
+    risco: "seguro",
+    pacotes: ["vender", "organizar"],
+  },
+  {
     name: "crm_create_lead",
     category: "write",
     rotulo: "Criar oportunidade no funil",
