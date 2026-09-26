@@ -58,6 +58,8 @@ import { logger } from "@/lib/logger";
 import {
   RETENCAO_AUDITORIA_DIAS_PADRAO,
   RETENCAO_AUDITORIA_DIAS_PISO,
+  RETENCAO_CANDIDATOS_GOLDEN_DIAS_PADRAO,
+  RETENCAO_CANDIDATOS_GOLDEN_DIAS_PISO,
   RETENCAO_AVISO_DE_CASO_DIAS_PADRAO,
   RETENCAO_AVISO_DE_CASO_DIAS_PISO,
   RETENCAO_CONVERSA_DO_CASO_DIAS_PADRAO,
@@ -132,6 +134,10 @@ export interface ResultadoDaRetencao {
   observacoes_do_jev_apagadas: number;
   lotes_observacoes_do_jev: number;
   observacoes_do_jev_tem_resto: boolean;
+  /** O candidato ao golden set vencido — rótulo, sem texto de cliente (0426). */
+  candidatos_do_golden_apagados: number;
+  lotes_candidatos_do_golden: number;
+  candidatos_do_golden_tem_resto: boolean;
   retencao_fila_dias: number;
   retencao_auditoria_dias: number;
   retencao_espelho_dias: number;
@@ -140,6 +146,7 @@ export interface ResultadoDaRetencao {
   retencao_aviso_de_caso_dias: number;
   retencao_prospeccao_dias: number;
   retencao_observacoes_do_jev_dias: number;
+  retencao_candidatos_do_golden_dias: number;
   /** Avisos de configuração — nunca ausentes em silêncio quando existem. */
   avisos: string[];
 }
@@ -156,7 +163,8 @@ export interface PodaDb {
       | "fn_expurgar_passagens_vencidas"
       | "fn_expurgar_avisos_de_caso_vencidos"
       | "fn_expurgar_prospeccao_vencida"
-      | "fn_expurgar_observacoes_do_jev",
+      | "fn_expurgar_observacoes_do_jev"
+      | "fn_expurgar_candidatos_do_golden",
     args: { p_retencao_dias: number; p_limite: number },
   ): Promise<{ data: number | null; error: { message: string } | null }>;
 }
@@ -172,7 +180,8 @@ async function drenar(
     | "fn_expurgar_passagens_vencidas"
     | "fn_expurgar_avisos_de_caso_vencidos"
     | "fn_expurgar_prospeccao_vencida"
-    | "fn_expurgar_observacoes_do_jev",
+    | "fn_expurgar_observacoes_do_jev"
+    | "fn_expurgar_candidatos_do_golden",
   dias: number,
 ): Promise<{ apagadas: number; lotes: number; temResto: boolean }> {
   let apagadas = 0;
@@ -209,6 +218,7 @@ export async function podarHistorico(
     CASE_ALERT_RETENTION_DAYS?: string;
     PROSPECCAO_RETENTION_DAYS?: string;
     JEV_OBSERVACOES_RETENTION_DAYS?: string;
+    GOLDEN_CANDIDATES_RETENTION_DAYS?: string;
   },
 ): Promise<ResultadoDaRetencao> {
   const fila = interpretarRetencao(ambiente.JOB_QUEUE_RETENTION_DAYS, {
@@ -258,6 +268,12 @@ export async function podarHistorico(
     piso: RETENCAO_OBSERVACOES_DO_JEV_DIAS_PISO,
   });
 
+  const candidatosDoGolden = interpretarRetencao(ambiente.GOLDEN_CANDIDATES_RETENTION_DAYS, {
+    chave: "GOLDEN_CANDIDATES_RETENTION_DAYS",
+    padrao: RETENCAO_CANDIDATOS_GOLDEN_DIAS_PADRAO,
+    piso: RETENCAO_CANDIDATOS_GOLDEN_DIAS_PISO,
+  });
+
   const jobs = await drenar(db, "fn_podar_fila_de_jobs", fila.dias);
   const linhas = await drenar(db, "fn_expurgar_auditoria_vencida", auditoria.dias);
   const eventos = await drenar(db, "fn_expurgar_espelho_da_agenda", espelho.dias);
@@ -293,6 +309,10 @@ export async function podarHistorico(
   // Nona poda: as observações do Jev (0421). Padrão 90 / piso 30, a janela da
   // concordância que o cartão mostra — o piso mora no CORPO da função.
   const observacoesDrenadas = await drenar(db, "fn_expurgar_observacoes_do_jev", observacoesDoJev.dias);
+  // Décima poda: o candidato ao golden set (0426, issue #1695). Padrão 90 /
+  // piso 30, a janela em que o near-miss ainda é curável — o piso mora no
+  // CORPO da função, como nas irmãs. A linha é rótulo, sem texto de cliente.
+  const candidatosDrenados = await drenar(db, "fn_expurgar_candidatos_do_golden", candidatosDoGolden.dias);
 
   return {
     jobs_apagados: jobs.apagadas,
@@ -304,6 +324,7 @@ export async function podarHistorico(
     avisos_de_caso_apagados: avisosDeCaso.apagadas,
     prospeccao_apagada: prospeccaoDrenada.apagadas,
     observacoes_do_jev_apagadas: observacoesDrenadas.apagadas,
+    candidatos_do_golden_apagados: candidatosDrenados.apagadas,
     lotes_fila: jobs.lotes,
     lotes_auditoria: linhas.lotes,
     lotes_espelho: eventos.lotes,
@@ -312,6 +333,7 @@ export async function podarHistorico(
     lotes_avisos_de_caso: avisosDeCaso.lotes,
     lotes_prospeccao: prospeccaoDrenada.lotes,
     lotes_observacoes_do_jev: observacoesDrenadas.lotes,
+    lotes_candidatos_do_golden: candidatosDrenados.lotes,
     fila_tem_resto: jobs.temResto,
     auditoria_tem_resto: linhas.temResto,
     espelho_tem_resto: eventos.temResto,
@@ -320,6 +342,7 @@ export async function podarHistorico(
     avisos_de_caso_tem_resto: avisosDeCaso.temResto,
     prospeccao_tem_resto: prospeccaoDrenada.temResto,
     observacoes_do_jev_tem_resto: observacoesDrenadas.temResto,
+    candidatos_do_golden_tem_resto: candidatosDrenados.temResto,
     retencao_fila_dias: fila.dias,
     retencao_auditoria_dias: auditoria.dias,
     retencao_espelho_dias: espelho.dias,
@@ -328,6 +351,7 @@ export async function podarHistorico(
     retencao_aviso_de_caso_dias: avisoDeCaso.dias,
     retencao_prospeccao_dias: prospeccao.dias,
     retencao_observacoes_do_jev_dias: observacoesDoJev.dias,
+    retencao_candidatos_do_golden_dias: candidatosDoGolden.dias,
     avisos: [
       fila.aviso,
       auditoria.aviso,
@@ -337,6 +361,7 @@ export async function podarHistorico(
       avisoDeCaso.aviso,
       prospeccao.aviso,
       observacoesDoJev.aviso,
+      candidatosDoGolden.aviso,
     ].filter((a): a is string => a !== null),
   };
 }
@@ -377,7 +402,11 @@ export function houveEfeito(resultado: ResultadoDaRetencao): boolean {
     resultado.prospeccao_apagada > 0 ||
     // A nona, pela mesma razão: poda que apagou sem deixar trilha é
     // encolhimento silencioso.
-    resultado.observacoes_do_jev_apagadas > 0
+    resultado.observacoes_do_jev_apagadas > 0 ||
+    // A décima, pela mesma razão das nove: uma rodada que só apagou candidato
+    // ao golden set vencido apagaria linha sem deixar registro — encolhimento
+    // silencioso.
+    resultado.candidatos_do_golden_apagados > 0
   );
 }
 
@@ -415,6 +444,7 @@ async function handle(req: NextRequest): Promise<Response> {
       CASE_ALERT_RETENTION_DAYS: env.CASE_ALERT_RETENTION_DAYS,
       PROSPECCAO_RETENTION_DAYS: env.PROSPECCAO_RETENTION_DAYS,
       JEV_OBSERVACOES_RETENTION_DAYS: env.JEV_OBSERVACOES_RETENTION_DAYS,
+      GOLDEN_CANDIDATES_RETENTION_DAYS: env.GOLDEN_CANDIDATES_RETENTION_DAYS,
     });
     // ── A cascata de anonimização que ficou pela metade ──────────────────
     //
