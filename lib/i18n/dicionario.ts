@@ -12420,6 +12420,7 @@ export const DICIONARIO: Traducoes = {
   // ─── PREVISÃO PONDERADA DO FUNIL (issue #1535) ───
   "Previsão": { es: "Previsión" },
   "Ponderado": { es: "Ponderado" },
+  "ponderado": { es: "ponderado" },
   "Bruto": { es: "Bruto" },
   "bruto": { es: "bruto" },
   "Chance de fechamento (0 a 100)": { es: "Probabilidad de cierre (0 a 100)" },

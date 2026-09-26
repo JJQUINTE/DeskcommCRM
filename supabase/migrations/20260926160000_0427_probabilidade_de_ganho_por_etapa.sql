@@ -1,4 +1,4 @@
--- 0426 — probabilidade de ganho POR ETAPA (issue #1535).
+-- 0427 — probabilidade de ganho POR ETAPA (issue #1535).
 --
 -- O funil já guarda os ingredientes da previsão (valor, moeda, data prevista
 -- de fechamento) e não a conta: não há probabilidade por etapa nem previsão

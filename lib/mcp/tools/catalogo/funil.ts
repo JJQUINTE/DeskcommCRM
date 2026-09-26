@@ -52,7 +52,11 @@ export const TOOLS_FUNIL = declararTools([
       "Mostra quanto deve entrar e quando: os negócios abertos somados por moeda e por mês, com a chance de fechamento que cada etapa tem, e à parte o que ainda não tem data nem chance definida.",
     oQueToca: "Funil de vendas",
     risco: "seguro",
-    pacotes: ["vender", "organizar"],
+    // Leitura GERENCIAL (quanto entra e quando), não passo de venda: o agente
+    // que atende não precisa dela para mover o cliente, e no pacote padrão do
+    // onboarding ela ocupava a vaga que deixa uma segunda jornada caber no teto
+    // (tests/unit/pacote-reserva-vaga-da-critica.test.ts).
+    pacotes: ["organizar"],
   },
   {
     name: "crm_create_lead",
