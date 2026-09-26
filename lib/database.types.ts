@@ -4667,6 +4667,7 @@ export type Database = {
           external_id: string | null
           id: string
           last_activity_at: string | null
+          lost_from_stage_id: string | null
           lost_reason: string | null
           won_reason: string | null
           organization_id: string
@@ -4708,6 +4709,7 @@ export type Database = {
           pipeline_id: string
           position_in_stage?: number
           retomado_de_lead_id?: string | null
+          lost_from_stage_id?: string | null
           source?: string
           source_metadata?: Json
           stage_changed_at?: string | null
@@ -4740,6 +4742,7 @@ export type Database = {
           pipeline_id?: string
           position_in_stage?: number
           retomado_de_lead_id?: string | null
+          lost_from_stage_id?: string | null
           source?: string
           source_metadata?: Json
           stage_changed_at?: string | null
