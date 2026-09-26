@@ -207,18 +207,4 @@ describe("pipelineConfigPatchSchema — motivos de perda com categoria (#1537)",
         .success,
     ).toBe(false);
   });
-
-  it("aceita a lista de categorias do funil e o teto dela", () => {
-    expect(
-      pipelineConfigPatchSchema.safeParse({ lost_reason_categories: ["Cliente", "Nós"] }).success,
-    ).toBe(true);
-    expect(
-      pipelineConfigPatchSchema.safeParse({ lost_reason_categories: [""] }).success,
-    ).toBe(false);
-    expect(
-      pipelineConfigPatchSchema.safeParse({
-        lost_reason_categories: Array.from({ length: 21 }, (_, i) => `c${i}`),
-      }).success,
-    ).toBe(false);
-  });
 });

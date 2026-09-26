@@ -239,12 +239,6 @@ export const pipelineConfigPatchSchema = z.object({
     .max(50)
     .optional(),
   /**
-   * As categorias que ESTE funil usa (issue #1537) — a lista de onde o filtro e
-   * o relatório tiram as opções quando o operador quer mais do que o padrão do
-   * produto (`CATEGORIAS_DE_PERDA`). Ausente não é erro: o padrão resolve.
-   */
-  lost_reason_categories: z.array(z.string().min(1).max(40)).max(20).optional(),
-  /**
    * O MOTIVO DE GANHO por funil (issue #1536) — espelho de `lost_reasons`.
    * Sem lista cadastrada o motivo é texto livre; com lista, só o que está nela
    * passa (`recusaDeMotivoDoGanho`, o equivalente do ganho à CHECK que o banco

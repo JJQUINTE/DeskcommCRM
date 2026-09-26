@@ -101,9 +101,8 @@ export type CanonicalLostReason = (typeof CANONICAL_LOST_REASONS)[number];
  * As categorias com que o relatório "Perdas" e o filtro do quadro agrupam
  * (issue #1537).
  *
- * São as do PRODUTO: um funil pode declarar as dele em
- * `settings.lost_reason_categories`, mas sem nada cadastrado é esta lista que
- * resolve. `moved_to_another_pipeline` fica de fora de propósito — é motivo de
+ * São as do PRODUTO: o funil atribui categoria a cada motivo em
+ * `settings.lost_reasons` (`{ label, categoria }`). `moved_to_another_pipeline` fica de fora de propósito — é motivo de
  * SISTEMA (a troca de funil encerra a origem) e a migration 0266 já o exclui
  * de `fn_attendant_metrics`; categoriá-lo seria abrir a porta de contar
  * transferência como perda comercial.

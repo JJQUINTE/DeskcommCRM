@@ -269,16 +269,11 @@ function PipelineEditor({
       .filter((s) => s.length > 0);
     // #1537: motivo com categoria vira `{ label, categoria }`; sem categoria
     // continua string pura — formato que todo funil já tem e que o trigger
-    // aceita igual. Quem tem categoria fora do padrão do produto entra também
-    // em `lost_reason_categories`, que é a lista da qual filtro e relatório
-    // tiram as opções.
+    // aceita igual.
     const motivosComCategoria = reasons.map((rotulo) => {
       const categoria = categorias[rotulo];
       return categoria ? { label: rotulo, categoria } : rotulo;
     });
-    const categoriasDoFunil = [
-      ...new Set([...CATEGORIAS_DE_PERDA, ...Object.values(categorias).filter(Boolean)]),
-    ];
 
     const wonReasons = wonReasonsText
       .split(",")
@@ -289,7 +284,6 @@ function PipelineEditor({
       vocabulary: { lead, deal, won, lost },
       fields: ok,
       lost_reasons: motivosComCategoria,
-      lost_reason_categories: categoriasDoFunil,
       won_reasons: wonReasons,
       won_reason_required: wonRequired,
       reabertura: retomaComoNovo ? "novo_negocio" : "mesmo_registro",
