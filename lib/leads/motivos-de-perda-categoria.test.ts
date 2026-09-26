@@ -14,6 +14,7 @@ import {
   motivosDaCategoria,
   motivosDoFunil,
 } from "./motivos-de-perda-do-funil";
+import { recusaDeMotivoForaDoVocabulario } from "./motivo-da-perda";
 
 describe("motivosComCategoriaDoFunil (#1537)", () => {
   it("lê texto puro e objeto na MESMA lista, sem migrar nada", () => {
@@ -103,5 +104,24 @@ describe("motivosDaCategoria (#1537) — o filtro de categoria vira lista de ró
   it("categoria vazia ou desconhecida devolve lista vazia — filtro que acha nada", () => {
     expect(motivosDaCategoria([], "")).toEqual([]);
     expect(motivosDaCategoria([], "Inexistente")).toEqual([]);
+  });
+});
+
+describe("recusaDeMotivoForaDoVocabulario aceita motivo com categoria (#1537)", () => {
+  const settingsDoFunil = {
+    lost_reasons: ["Adiou", { label: "Não tinha o perfil", categoria: "Mérito" }],
+  };
+
+  it("o label do objeto é aceito, como o trigger aceita", () => {
+    expect(
+      recusaDeMotivoForaDoVocabulario({ motivo: "Não tinha o perfil", settingsDoFunil }),
+    ).toBeNull();
+    expect(recusaDeMotivoForaDoVocabulario({ motivo: "Adiou", settingsDoFunil })).toBeNull();
+  });
+
+  it("motivo fora da lista continua recusado", () => {
+    expect(recusaDeMotivoForaDoVocabulario({ motivo: "Mérito", settingsDoFunil })?.codigo).toBe(
+      "lost_reason_invalid",
+    );
   });
 });
