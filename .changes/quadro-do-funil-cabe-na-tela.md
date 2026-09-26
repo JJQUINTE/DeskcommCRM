@@ -13,3 +13,7 @@ O total no topo de cada etapa aparecia cem vezes maior em moeda sem centavos,
 como o guarani (dois pedidos de ₲125.000 somavam "Gs. 25.000.000"). Ele passa a
 somar certo, e o card, o total e o detalhe do negócio escrevem o valor do mesmo
 jeito, na convenção da moeda ("Gs. 125.000").
+A linha "ponderado" das etapas com chance calibrada passa a somar do mesmo
+jeito que o total, sem sair cem vezes maior nessas moedas.
+
+Contribuição de @jmpo (#1727).
