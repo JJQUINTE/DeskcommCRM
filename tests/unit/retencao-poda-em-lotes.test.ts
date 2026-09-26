@@ -12,6 +12,8 @@ import {
 import {
   RETENCAO_AUDITORIA_DIAS_PADRAO,
   RETENCAO_AUDITORIA_DIAS_PISO,
+  RETENCAO_CANDIDATOS_GOLDEN_DIAS_PADRAO,
+  RETENCAO_CANDIDATOS_GOLDEN_DIAS_PISO,
   RETENCAO_AVISO_DE_CASO_DIAS_PADRAO,
   RETENCAO_CONVERSA_DO_CASO_DIAS_PADRAO,
   RETENCAO_ESPELHO_AGENDA_DIAS_PADRAO,
@@ -269,6 +271,11 @@ describe("houveEfeito — as duas direções", () => {
     lotes_observacoes_do_jev: 0,
     observacoes_do_jev_tem_resto: false,
     retencao_observacoes_do_jev_dias: RETENCAO_OBSERVACOES_DO_JEV_DIAS_PADRAO,
+    // Décima poda (migration 0426, issue #1695): o candidato ao golden set.
+    candidatos_do_golden_apagados: 0,
+    lotes_candidatos_do_golden: 0,
+    candidatos_do_golden_tem_resto: false,
+    retencao_candidatos_do_golden_dias: RETENCAO_CANDIDATOS_GOLDEN_DIAS_PADRAO,
     avisos: [] as string[],
   };
 
@@ -294,6 +301,12 @@ describe("houveEfeito — as duas direções", () => {
 
   it("...e apagou observação do Jev vencida → TAMBÉM audita (0421)", () => {
     expect(houveEfeito({ ...base, observacoes_do_jev_apagadas: 1 })).toBe(true);
+  });
+
+  it("...e apagou candidato ao golden set vencido → TAMBÉM audita (0426)", () => {
+    // A décima poda entra em `houveEfeito` no MESMO commit em que entra no laço
+    // — é a mesma lição das nove anteriores: o predicado esquecido é mudo.
+    expect(houveEfeito({ ...base, candidatos_do_golden_apagados: 1 })).toBe(true);
   });
 
   it("apagou job → audita; apagou auditoria → audita", () => {
@@ -364,6 +377,23 @@ describe("os pisos do TypeScript e os do SQL são os mesmos números", () => {
     expect(bloco.length).toBeGreaterThan(500);
     expect(bloco).toContain(
       `greatest(coalesce(p_retencao_dias, ${RETENCAO_ESPELHO_AGENDA_DIAS_PADRAO}), ${RETENCAO_ESPELHO_AGENDA_DIAS_PISO})`,
+    );
+  });
+
+  it("...e o dos candidatos ao golden set também (migration 0426)", async () => {
+    // Mesma régua das três acima: piso que só existe no TypeScript é decorativo.
+    // O apêndice do baseline é o que quem instalou numa VPS aplica — se o número
+    // divergir lá, a instalação inteira poda com outro prazo que o `.env.example`
+    // promete.
+    const { readFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const sql = readFileSync(join(__dirname, "..", "..", "supabase", "baseline.sql"), "utf8");
+    const bloco = sql.slice(
+      sql.indexOf("-- ---- os candidatos ao golden set viram linha de rótulo (migration 0426) ----"),
+    );
+    expect(bloco.length).toBeGreaterThan(500);
+    expect(bloco).toContain(
+      `greatest(coalesce(p_retencao_dias, ${RETENCAO_CANDIDATOS_GOLDEN_DIAS_PADRAO}), ${RETENCAO_CANDIDATOS_GOLDEN_DIAS_PISO})`,
     );
   });
 });
