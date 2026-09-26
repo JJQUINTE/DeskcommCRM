@@ -61,6 +61,16 @@ describe("agruparPerdas (#1537)", () => {
     ]);
   });
 
+  it("transferência entre funis não entra no relatório nem no total (0266)", () => {
+    const relatorio = agruparPerdas([
+      linha({ lost_reason: "moved_to_another_pipeline", value_cents: 500, currency: "BRL" }),
+      linha({ lost_reason: "price", value_cents: 100, currency: "BRL" }),
+    ]);
+    expect(relatorio.total).toBe(1);
+    expect(relatorio.porMotivo).toEqual([{ chave: "price", quantidade: 1 }]);
+    expect(relatorio.porMoeda).toEqual([{ moeda: "BRL", quantidade: 1, valor_cents: 100 }]);
+  });
+
   it("sem motivo e sem categoria viram rótulos honestos, não some da soma", () => {
     const relatorio = agruparPerdas([linha({})], {});
     expect(relatorio.porMotivo).toEqual([{ chave: "Sem motivo registrado", quantidade: 1 }]);

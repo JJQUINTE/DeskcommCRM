@@ -19,6 +19,7 @@
  *    honesto, porque sem configuração não há categoria a mostrar.
  */
 
+import { MOTIVO_DA_TRANSFERENCIA } from "@/lib/leads/motivo-da-perda";
 import { categoriaDoMotivo } from "@/lib/leads/motivos-de-perda-do-funil";
 
 export interface PerdaLinha {
@@ -101,8 +102,13 @@ export function agruparPerdas(
           contexto.settings,
       ));
 
+  let total = 0;
   for (const linha of linhas) {
     const motivo = linha.lost_reason?.trim() || null;
+    // Transferência entre funis não é perda (migration 0266): o negócio segue
+    // vivo no destino, e contá-lo aqui inflaria o relatório e o total.
+    if (motivo === MOTIVO_DA_TRANSFERENCIA) continue;
+    total += 1;
     const rotuloMotivo = motivo ?? SEM_MOTIVO;
     porMotivo.set(rotuloMotivo, (porMotivo.get(rotuloMotivo) ?? 0) + 1);
 
@@ -135,6 +141,6 @@ export function agruparPerdas(
         Number(a.moeda === SEM_MOEDA) - Number(b.moeda === SEM_MOEDA) ||
         a.moeda.localeCompare(b.moeda, "pt-BR"),
     ),
-    total: linhas.length,
+    total,
   };
 }
