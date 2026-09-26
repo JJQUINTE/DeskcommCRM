@@ -39801,7 +39801,7 @@ create index if not exists idx_crm_leads_retomado_de_lead
   on public.crm_leads (retomado_de_lead_id)
   where retomado_de_lead_id is not null;
 
--- ---- probabilidade de ganho por etapa (migration 0426) ----
+-- ---- probabilidade de ganho por etapa (migration 0427) ----
 --
 -- Aditiva e idempotente: a coluna nasce null em toda linha existente, e null
 -- significa "esta etapa não tem probabilidade calibrada" — que a regra de
