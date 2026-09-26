@@ -134,7 +134,7 @@ export interface ResultadoDaRetencao {
   observacoes_do_jev_apagadas: number;
   lotes_observacoes_do_jev: number;
   observacoes_do_jev_tem_resto: boolean;
-  /** O candidato ao golden set vencido — rótulo, sem texto de cliente (0426). */
+  /** O candidato ao golden set vencido — rótulo, sem texto de cliente (0428). */
   candidatos_do_golden_apagados: number;
   lotes_candidatos_do_golden: number;
   candidatos_do_golden_tem_resto: boolean;
@@ -309,7 +309,7 @@ export async function podarHistorico(
   // Nona poda: as observações do Jev (0421). Padrão 90 / piso 30, a janela da
   // concordância que o cartão mostra — o piso mora no CORPO da função.
   const observacoesDrenadas = await drenar(db, "fn_expurgar_observacoes_do_jev", observacoesDoJev.dias);
-  // Décima poda: o candidato ao golden set (0426, issue #1695). Padrão 90 /
+  // Décima poda: o candidato ao golden set (0428, issue #1695). Padrão 90 /
   // piso 30, a janela em que o near-miss ainda é curável — o piso mora no
   // CORPO da função, como nas irmãs. A linha é rótulo, sem texto de cliente.
   const candidatosDrenados = await drenar(db, "fn_expurgar_candidatos_do_golden", candidatosDoGolden.dias);

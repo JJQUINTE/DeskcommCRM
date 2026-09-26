@@ -15,7 +15,7 @@
  *
  * Divergência classificador×modelo (o classifier sugeriu X, o modelo confirmou Y≠X via
  * update_lead_state) vira candidato ao golden set — LINHA em `golden_candidates`
- * (migration 0426, issue #1695), mesmo destino da F3-09. A linha leva SÓ os dois estágios
+ * (migration 0428, issue #1695), mesmo destino da F3-09. A linha leva SÓ os dois estágios
  * e os ponteiros (lead_id, job_id): o sinal do turno (texto do lead — PII) não vai nem a
  * disco nem ao banco aqui, e log só leva os NOMES dos estágios (regra dura 8).
  *
@@ -181,7 +181,7 @@ export interface StageDivergence {
 
 /**
  * Grava a divergência classificador×modelo como candidato ao golden set
- * (SalesGPT/blueprint 7.6) — LINHA em `golden_candidates` (migration 0426, issue
+ * (SalesGPT/blueprint 7.6) — LINHA em `golden_candidates` (migration 0428, issue
  * #1695), não arquivo no disco do contêiner: o JSON era lido por nenhuma tela,
  * morria a cada atualização da imagem e ficava fora da cascata de anonimização.
  *

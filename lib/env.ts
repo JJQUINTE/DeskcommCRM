@@ -410,7 +410,7 @@ const schema = z.object({
    */
   JEV_OBSERVACOES_RETENTION_DAYS: z.string().optional().default(""),
   /**
-   * Candidatos ao golden set (migration 0426, issue #1695): rótulo de near-miss
+   * Candidatos ao golden set (migration 0428, issue #1695): rótulo de near-miss
    * e de divergência, sem texto de cliente. `z.string()` pela MESMA razão das
    * irmãs acima — quem interpreta é `lib/retencao/politica.ts`. Padrão 90, piso
    * 30 (a janela em que um near-miss ainda é curável).

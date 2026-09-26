@@ -212,7 +212,7 @@ export const RETENCAO_OBSERVACOES_DO_JEV_DIAS_PADRAO = 90;
 export const RETENCAO_OBSERVACOES_DO_JEV_DIAS_PISO = 30;
 
 /**
- * 90 dias para os CANDIDATOS AO GOLDEN SET (`golden_candidates`, migration 0426).
+ * 90 dias para os CANDIDATOS AO GOLDEN SET (`golden_candidates`, migration 0428).
  *
  * A linha não guarda texto de cliente — só o rótulo do near-miss de skill ou da
  * divergência classificador×modelo e os ponteiros do lead e do job. Ela existe
@@ -221,7 +221,7 @@ export const RETENCAO_OBSERVACOES_DO_JEV_DIAS_PISO = 30;
  * issue que criou a tabela (#1695) é justamente sobre dado de titular parado
  * fora de qualquer prazo.
  *
- * Quem aplica é `fn_expurgar_candidatos_do_golden` (0426), em lotes pelo cron
+ * Quem aplica é `fn_expurgar_candidatos_do_golden` (0428), em lotes pelo cron
  * `data-retention`, com o piso no CORPO da função, como as irmãs.
  */
 export const RETENCAO_CANDIDATOS_GOLDEN_DIAS_PADRAO = 90;

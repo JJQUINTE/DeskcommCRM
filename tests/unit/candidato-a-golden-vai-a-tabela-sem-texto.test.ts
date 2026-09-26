@@ -10,7 +10,7 @@
  * contêiner, onde nenhuma tela o lê, ele se perde a cada atualização da imagem e
  * a cascata de anonimização da LGPD alcança o banco, não o disco.
  *
- * O que este teste prova, depois da migration 0426:
+ * O que este teste prova, depois da migration 0428:
  *
  *   1. a gravação é um INSERT em `public.golden_candidates` — a linha tem OS
  *      PONTEIROS (`organization_id`, `lead_id`, `job_id`) e rótulo, nunca o

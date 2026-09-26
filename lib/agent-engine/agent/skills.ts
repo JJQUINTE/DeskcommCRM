@@ -18,7 +18,7 @@
  *
  * Misses de matching ('devia ter usado a skill X e não usou') viram candidatos ao golden
  * set (blueprint 3.3): um `probe_keyword` que dispara SEM o `any_keyword` do hard-match é um
- * near-miss — o runtime grava o candidato como LINHA em `golden_candidates` (migration 0426,
+ * near-miss — o runtime grava o candidato como LINHA em `golden_candidates` (migration 0428,
  * issue #1695), nunca como arquivo em disco. A linha leva SÓ rótulo (skill + motivo) e os
  * ponteiros do lead e do job: o texto do cliente (PII) não vai nem a disco nem a log
  * (regra dura 8) — quem quiser ler a conversa abre a ficha pelo ponteiro.
@@ -318,7 +318,7 @@ export function recentInboundSignal(
 
 /**
  * Grava os near-misses como candidatos ao golden set (blueprint 3.3) — LINHA em
- * `golden_candidates` (migration 0426, issue #1695), não arquivo em disco: o
+ * `golden_candidates` (migration 0428, issue #1695), não arquivo em disco: o
  * JSON no disco do contêiner era lido por nenhuma tela, morria a cada atualização
  * da imagem e ficava fora da cascata de anonimização da LGPD.
  *

@@ -4777,7 +4777,7 @@ async function executarTurnoDoAgente(
     // F3-11: divergência classificador×modelo. O classificador sugeriu um estágio; se o
     // modelo confirmou (via update_lead_state — a máquina F2-10) um estágio DIFERENTE, o
     // desacordo vira candidato ao golden set (linha em `golden_candidates` — mesma tabela
-    // da F3-09, migration 0426). Sem sugestão, sem confirmação, ou concordância ⇒ nenhuma
+    // da F3-09, migration 0428). Sem sugestão, sem confirmação, ou concordância ⇒ nenhuma
     // linha (zero divergência).
     if (
       deps.knobs.goldenCandidates === true &&

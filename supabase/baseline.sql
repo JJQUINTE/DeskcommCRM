@@ -38764,13 +38764,13 @@ revoke execute on function public.fn_expurgar_observacoes_do_jev(int,int) from a
 revoke execute on function public.fn_expurgar_observacoes_do_jev(int,int) from authenticated;
 grant  execute on function public.fn_expurgar_observacoes_do_jev(int,int) to service_role;
 
--- ---- os candidatos ao golden set viram linha de rótulo (migration 0426) ----
+-- ---- os candidatos ao golden set viram linha de rótulo (migration 0428) ----
 --
 -- O candidato do matcher de skills (F3-09) e do classificador de etapa (F3-11)
 -- sai do disco (JSON em `GOLDEN_CANDIDATES_DIR`) e vira linha SEM texto de
 -- cliente, com ponteiro `lead_id` para quem quiser ler a conversa de verdade.
 -- ANTES da varredura de anon, como a 0421: a tabela nasce aqui para quem só
--- aplica o baseline. Racional inteiro na migration 0426.
+-- aplica o baseline. Racional inteiro na migration 0428.
 create table if not exists public.golden_candidates (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references public.organizations(id) on delete cascade,

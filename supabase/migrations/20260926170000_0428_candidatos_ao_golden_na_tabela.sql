@@ -1,5 +1,5 @@
 -- ============================================================================
--- 2026-09-26 — 0426: OS CANDIDATOS AO GOLDEN SET SAEM DO DISCO E VÃO PARA A
+-- 2026-09-26 — 0428: OS CANDIDATOS AO GOLDEN SET SAEM DO DISCO E VÃO PARA A
 -- TABELA (issue #1695)
 --
 -- O matcher de skills (F3-09) e o classificador de etapa (F3-11) gravavam o
