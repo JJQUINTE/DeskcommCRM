@@ -98,6 +98,48 @@ export const CANONICAL_LOST_REASONS = [
 export type CanonicalLostReason = (typeof CANONICAL_LOST_REASONS)[number];
 
 /**
+ * As categorias com que o relatório "Perdas" e o filtro do quadro agrupam
+ * (issue #1537).
+ *
+ * São as do PRODUTO: um funil pode declarar as dele em
+ * `settings.lost_reason_categories`, mas sem nada cadastrado é esta lista que
+ * resolve. `moved_to_another_pipeline` fica de fora de propósito — é motivo de
+ * SISTEMA (a troca de funil encerra a origem) e a migration 0266 já o exclui
+ * de `fn_attendant_metrics`; categoriá-lo seria abrir a porta de contar
+ * transferência como perda comercial.
+ */
+export const CATEGORIAS_DE_PERDA = ["Cliente", "Concorrência", "Mérito", "Nós", "Ausência"] as const;
+export type CategoriaDePerda = (typeof CATEGORIAS_DE_PERDA)[number];
+
+/**
+ * A categoria PADRÃO de cada motivo canônico (issue #1537): o motivo já nasce
+ * agrupado sem que ninguém cadastre nada, e o funil pode SOBRESCREVER gravando
+ * `{ label, categoria }` em `settings.lost_reasons`.
+ *
+ * `other` não tem categoria de propósito: sem saber o que aconteceu, a tela
+ * estaria inventando informação que o relatório repete como fato.
+ *
+ * Os rótulos são a pergunta "de quem foi a ação que perdeu o negócio":
+ * `price` é "Nós" porque quem manda no preço é a casa (perdemos no preço que
+ * pedimos), `no_response` é a ausência do outro lado, `cancelled_by_customer`
+ * e `requested_by_customer` são o cliente.
+ */
+export const CATEGORIA_PADRAO_DO_MOTIVO: Partial<Record<CanonicalLostReason, CategoriaDePerda>> = {
+  requested_by_customer: "Cliente",
+  cancelled_by_customer: "Cliente",
+  payment_failed: "Cliente",
+  price: "Nós",
+  product_unavailable: "Nós",
+  cancelled_by_store: "Nós",
+  no_response: "Ausência",
+};
+
+/** A categoria de um valor gravado em `lost_reason`, se o produto tem uma. */
+export function categoriaPadraoDoMotivo(valor: string): CategoriaDePerda | undefined {
+  return CATEGORIA_PADRAO_DO_MOTIVO[valor.trim() as CanonicalLostReason];
+}
+
+/**
  * loseLeadSchema accepts canonical reasons OR any string (pipeline-extended).
  * The server-side DB trigger is the source of truth; we keep the Zod schema
  * permissive here to not block tenant-specific extensions.
