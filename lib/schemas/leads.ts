@@ -95,6 +95,28 @@ export const CANONICAL_LOST_REASONS = [
    */
   "moved_to_another_pipeline",
 ] as const;
+
+/**
+ * O rótulo legível de cada motivo canônico (em pt-BR; a tela passa por `t()`).
+ * Mora aqui, ao lado da lista, para o diálogo de perda, o filtro do quadro e o
+ * relatório "Perdas" (#1537) mostrarem o MESMO texto — e nunca a chave crua.
+ */
+export const ROTULO_DO_MOTIVO_CANONICO: Record<(typeof CANONICAL_LOST_REASONS)[number], string> = {
+  requested_by_customer: "Cliente solicitou cancelamento",
+  price: "Preço",
+  no_response: "Sem resposta do cliente",
+  product_unavailable: "Produto indisponível",
+  cancelled_by_store: "Cancelado pela loja",
+  cancelled_by_customer: "Cancelado pelo cliente",
+  payment_failed: "Falha no pagamento",
+  other: "Outro motivo",
+  moved_to_another_pipeline: "Levado para outro funil",
+};
+
+/** O rótulo pt-BR do motivo: o do canônico, ou o próprio texto do motivo do funil. */
+export function rotuloDoMotivoDePerda(motivo: string): string {
+  return (ROTULO_DO_MOTIVO_CANONICO as Record<string, string | undefined>)[motivo] ?? motivo;
+}
 export type CanonicalLostReason = (typeof CANONICAL_LOST_REASONS)[number];
 
 /**

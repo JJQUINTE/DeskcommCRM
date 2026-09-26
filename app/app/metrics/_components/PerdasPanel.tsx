@@ -13,6 +13,8 @@
  * olha.
  */
 import { useT } from "@/hooks/i18n/useT";
+import { rotuloDoMotivoDePerda } from "@/lib/schemas/leads";
+import { SEM_CATEGORIA, SEM_ETAPA, SEM_MOEDA, SEM_MOTIVO } from "@/lib/metrics/perdas";
 import { usePerdasMetrics } from "@/hooks/metrics/usePerdasMetrics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -35,14 +37,20 @@ function formataMoeda(moeda: string, cents: number): string {
   }
 }
 
+/** Os rótulos que o SERVIDOR põe no lugar da ausência: texto do produto, traduzível. */
+const SENTINELAS = new Set<string>([SEM_MOTIVO, SEM_CATEGORIA, SEM_ETAPA, SEM_MOEDA]);
+
 function Bloco({
   titulo,
   linhas,
   coluna,
+  rotulo = (chave) => chave,
 }: {
   titulo: string;
   linhas: Array<{ chave: string; quantidade: number }>;
   coluna: string;
+  /** O que exibir no lugar da chave; nome de etapa e motivo próprio são dado. */
+  rotulo?: (chave: string) => string;
 }) {
   const t = useT();
   return (
@@ -61,7 +69,9 @@ function Bloco({
           <TableBody>
             {linhas.map((linha) => (
               <TableRow key={linha.chave}>
-                <TableCell className="truncate">{linha.chave}</TableCell>
+                <TableCell className="truncate">
+                  {SENTINELAS.has(linha.chave) ? t(linha.chave) : rotulo(linha.chave)}
+                </TableCell>
                 <TableCell className="text-right tabular-nums">{linha.quantidade}</TableCell>
               </TableRow>
             ))}
@@ -91,7 +101,15 @@ export function PerdasPanel() {
         </p>
       </CardHeader>
       <CardContent className="grid gap-6 md:grid-cols-3">
-        <Bloco titulo="Por motivo" linhas={relatorio.porMotivo} coluna="Motivo" />
+        <Bloco
+          titulo="Por motivo"
+          linhas={relatorio.porMotivo}
+          coluna="Motivo"
+          rotulo={(motivo) => {
+            const canonico = rotuloDoMotivoDePerda(motivo);
+            return canonico === motivo ? motivo : t(canonico);
+          }}
+        />
         <Bloco titulo="Por categoria" linhas={relatorio.porCategoria} coluna="Categoria" />
         <Bloco titulo="Por etapa de saída" linhas={relatorio.porEtapa} coluna="Etapa" />
 
@@ -108,7 +126,7 @@ export function PerdasPanel() {
             <TableBody>
               {relatorio.porMoeda.map((m) => (
                 <TableRow key={m.moeda}>
-                  <TableCell>{m.moeda}</TableCell>
+                  <TableCell>{m.moeda === SEM_MOEDA ? t(SEM_MOEDA) : m.moeda}</TableCell>
                   <TableCell className="text-right tabular-nums">{m.quantidade}</TableCell>
                   <TableCell className="text-right tabular-nums">
                     {formataMoeda(m.moeda, m.valor_cents)}

@@ -24,6 +24,7 @@ import {
   type LeadFilters,
 } from "@/lib/kanban/filters";
 import { categoriaDoMotivo } from "@/lib/leads/motivos-de-perda-do-funil";
+import { rotuloDoMotivoDePerda } from "@/lib/schemas/leads";
 import { cn } from "@/lib/utils";
 
 interface FilterBarProps {
@@ -152,7 +153,12 @@ export function FilterBar({ filters, onChange, leads, settings }: FilterBarProps
   }, [motivosPerdidos, settings]);
   /** Só com a aba em Perdidos: fora dela os dois filtros esconderiam tudo. */
   const mostraPerda = (filters.status ?? "all") === "lost" && motivosPerdidos.length > 0;
-  const motivoLabel = filters.lostReason ?? t("Todos");
+  // Canônico vira o rótulo traduzido; motivo próprio do funil é dado e sai como está.
+  const rotuloDoMotivo = (motivo: string) => {
+    const rotulo = rotuloDoMotivoDePerda(motivo);
+    return rotulo === motivo ? motivo : t(rotulo);
+  };
+  const motivoLabel = filters.lostReason ? rotuloDoMotivo(filters.lostReason) : t("Todos");
   const categoriaLabel = filters.lostCategory ?? t("Todas");
 
   return (
@@ -246,7 +252,7 @@ export function FilterBar({ filters, onChange, leads, settings }: FilterBarProps
                   key={motivo}
                   onClick={() => onChange({ ...filters, lostReason: motivo })}
                 >
-                  {motivo}
+                  {rotuloDoMotivo(motivo)}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>

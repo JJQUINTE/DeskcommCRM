@@ -65,10 +65,10 @@ export interface ContextoDaAgregacao {
   etapas?: Readonly<Record<string, string>>;
 }
 
-const SEM_MOTIVO = "Sem motivo registrado";
-const SEM_CATEGORIA = "Sem categoria";
-const SEM_MOEDA = "sem moeda";
-const SEM_ETAPA = "Etapa desconhecida";
+export const SEM_MOTIVO = "Sem motivo registrado";
+export const SEM_CATEGORIA = "Sem categoria";
+export const SEM_MOEDA = "sem moeda";
+export const SEM_ETAPA = "Etapa desconhecida";
 
 function ordena(mapa: Map<string, number>): Contagem[] {
   return [...mapa.entries()]
