@@ -39848,3 +39848,21 @@ begin
       on delete set null;
   end if;
 end $$;
+
+-- ---- probabilidade de ganho por etapa (migration 0427) ----
+--
+-- Aditiva e idempotente: a coluna nasce null em toda linha existente, e null
+-- significa "esta etapa não tem probabilidade calibrada" — que a regra de
+-- previsão reporta à parte (balde "sem probabilidade"), nunca some como zero
+-- em silêncio. `is_won`/`is_lost` valem 100 e 0 na regra
+-- (`lib/leads/previsao.ts`), não gravado: gravar aqui seria um segundo lugar
+-- para a mesma verdade divergir.
+alter table public.crm_stages
+  add column if not exists win_probability smallint;
+
+alter table public.crm_stages
+  drop constraint if exists crm_stages_win_probability_range;
+
+alter table public.crm_stages
+  add constraint crm_stages_win_probability_range
+  check (win_probability is null or win_probability between 0 and 100);

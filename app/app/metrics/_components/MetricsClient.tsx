@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useAttendantMetrics, type AttendantMetric } from "@/hooks/metrics/useAttendantMetrics";
 import { AtritoPanel } from "./AtritoPanel";
 import { PerdasPanel } from "./PerdasPanel";
+import { PrevisaoPanel } from "./PrevisaoPanel";
 import { useTeamMembers } from "@/hooks/team/useTeamMembers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -93,6 +94,12 @@ export function MetricsClient({ canCompare, currentUserId }: Props) {
       {/* Relatório "Perdas" (#1537): manager+, porque é o funil inteiro — o
           mesmo critério do /metrics para quem compara. */}
       {canCompare ? <PerdasPanel /> : null}
+
+      {/* Previsão ponderada do funil (issue #1535): por mês × moeda, com os
+          baldes "sem data" e "sem probabilidade" à parte. Depois do atrito de
+          propósito — é o número da EQUIPE comercial, que se subordina ao do
+          sistema inteiro acima. */}
+      <PrevisaoPanel />
 
       <Card>
         <CardHeader>
