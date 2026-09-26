@@ -79,7 +79,12 @@ const COR_DO_ESTADO: Record<string, string> = {
  */
 export function TemplatesParceiroClient({
   rota = "/api/v1/channels/partner/templates",
-}: { rota?: string } = {}) {
+  gerenciar = true,
+}: {
+  rota?: string;
+  /** Mostra Editar/Apagar no modelo aberto. A prévia aparece sempre. */
+  gerenciar?: boolean;
+} = {}) {
   const tagDoIdioma = useTagDeIdioma();
   const t = useT();
   const qc = useQueryClient();
@@ -609,20 +614,24 @@ export function TemplatesParceiroClient({
                       </p>
                     )}
                     <div className="flex flex-wrap items-center gap-2">
-                      <Button type="button" variant="outline" size="sm" onClick={() => abrirEdicao(tpl)}>
-                        <PencilSimple size={14} className="mr-1.5" aria-hidden />
-                        {t("Editar")}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => setApagando({ tpl, usos: null })}
-                      >
-                        <Trash size={14} className="mr-1.5" aria-hidden />
-                        {t("Apagar")}
-                      </Button>
+                      {gerenciar && (
+                        <>
+                          <Button type="button" variant="outline" size="sm" onClick={() => abrirEdicao(tpl)}>
+                            <PencilSimple size={14} className="mr-1.5" aria-hidden />
+                            {t("Editar")}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setApagando({ tpl, usos: null })}
+                          >
+                            <Trash size={14} className="mr-1.5" aria-hidden />
+                            {t("Apagar")}
+                          </Button>
+                        </>
+                      )}
                       <span className="ml-auto text-[10px] text-muted-foreground">
                         {t("Sincronizado em")} {new Date(tpl.syncedAt).toLocaleString(tagDoIdioma)}
                       </span>

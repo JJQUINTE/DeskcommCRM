@@ -13,3 +13,5 @@ modelo estiver em uso num follow-up ou no prompt de um agente, o apagar mostra
 onde antes de confirmar. Editar manda o modelo de novo para a revisão da
 plataforma, e a Meta limita quantas vezes um modelo aprovado pode ser editado;
 um nome apagado só pode ser reusado depois de 30 dias.
+
+Contribuição de @jmpo (#1728).
