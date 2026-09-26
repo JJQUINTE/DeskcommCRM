@@ -350,6 +350,26 @@ describe("worker de mídia: base_url do binding de visão (#855)", () => {
     );
   });
 
+  // Um `.env` antigo com o modelo do Groq e sem a chave própria transcrevia com
+  // whisper-1 pela OpenAI. O update não pode passar a pedir `whisper-large-v3`
+  // à OpenAI: o modelo do `.env` só vale nesse caminho sem BASE_URL.
+  it("modelo e BASE_URL de outro serviço sem a chave própria: segue whisper-1 na OpenAI", async () => {
+    comTranscricaoNoEnv({ model: "whisper-large-v3", baseUrl: "https://api.groq.com/openai/v1" });
+    linhaDaMensagem = {
+      ...linhaDaMensagem,
+      type: "audio",
+      media_mime: "audio/ogg",
+      media_storage_path: "org1/conv1/msg1.ogg",
+    };
+
+    await deriveMessageMedia(eventRow());
+
+    expect(provedorDeTranscricaoMock).toHaveBeenCalledWith(expect.objectContaining({ model: "whisper-1" }));
+    expect(provedorDeTranscricaoMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ baseUrl: expect.anything() }),
+    );
+  });
+
   it("sem nada no .env, a transcrição segue com whisper-1 e sem idioma — o comportamento de sempre", async () => {
     comTranscricaoNoEnv();
     linhaDaMensagem = {

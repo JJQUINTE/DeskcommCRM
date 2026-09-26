@@ -58,18 +58,31 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
+// As três chaves juntas, sempre: um `.env.local` com TRANSCRIPTION_BASE_URL
+// mudaria o que a tela anuncia e o caso mediria a máquina, não o código.
+function comTranscricaoNoEnv(t: { model: string; apiKey?: string; baseUrl?: string }): void {
+  vi.stubEnv("TRANSCRIPTION_MODEL", t.model);
+  vi.stubEnv("TRANSCRIPTION_API_KEY", t.apiKey ?? "");
+  vi.stubEnv("TRANSCRIPTION_BASE_URL", t.baseUrl ?? "");
+}
+
 describe("GET /api/v1/ai/providers — modelo de transcrição em vigor", () => {
   it("sem TRANSCRIPTION_MODEL, anuncia whisper-1 — o de sempre", async () => {
-    vi.stubEnv("TRANSCRIPTION_MODEL", "");
+    comTranscricaoNoEnv({ model: "" });
     expect(modeloDo(await pontos(), "transcricao_de_audio")).toBe("whisper-1");
   });
 
   it("com TRANSCRIPTION_MODEL, anuncia o modelo do .env — e só no ponto de transcrição", async () => {
-    vi.stubEnv("TRANSCRIPTION_MODEL", "gpt-transcribe");
+    comTranscricaoNoEnv({ model: "gpt-transcribe" });
     const lista = await pontos();
     expect(modeloDo(lista, "transcricao_de_audio")).toBe("gpt-transcribe");
     const outros = lista.filter((p) => p.id !== "transcricao_de_audio");
     expect(outros.length).toBeGreaterThan(0);
     expect(outros.map((p) => p.efetivo.modelId)).not.toContain("gpt-transcribe");
+  });
+
+  it("modelo de outro serviço (BASE_URL sem API_KEY) não é o que roda: anuncia whisper-1", async () => {
+    comTranscricaoNoEnv({ model: "whisper-large-v3", baseUrl: "https://api.groq.com/openai/v1" });
+    expect(modeloDo(await pontos(), "transcricao_de_audio")).toBe("whisper-1");
   });
 });

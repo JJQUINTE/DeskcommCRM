@@ -98,8 +98,18 @@ describe("idioma da transcrição", () => {
   });
 
   it("o modelo em vigor é o do ambiente quando definido, senão whisper-1 — o mesmo para worker e tela", () => {
-    expect(modeloDeTranscricaoEmVigor(undefined)).toBe("whisper-1");
-    expect(modeloDeTranscricaoEmVigor("  ")).toBe("whisper-1");
-    expect(modeloDeTranscricaoEmVigor("gpt-transcribe")).toBe("gpt-transcribe");
+    const semServico = { apiKey: undefined, baseUrl: undefined };
+    expect(modeloDeTranscricaoEmVigor({ ...semServico, model: undefined })).toBe("whisper-1");
+    expect(modeloDeTranscricaoEmVigor({ ...semServico, model: "  " })).toBe("whisper-1");
+    expect(modeloDeTranscricaoEmVigor({ ...semServico, model: "gpt-transcribe" })).toBe("gpt-transcribe");
+  });
+
+  it("modelo escrito para outro serviço (BASE_URL sem API_KEY) não vai para a OpenAI: vale whisper-1", () => {
+    const groq = "https://api.groq.com/openai/v1";
+    expect(modeloDeTranscricaoEmVigor({ model: "whisper-large-v3", apiKey: "", baseUrl: groq })).toBe("whisper-1");
+    // Com a chave própria, o modelo vai ao serviço dele — e vale.
+    expect(modeloDeTranscricaoEmVigor({ model: "whisper-large-v3", apiKey: "k", baseUrl: groq })).toBe(
+      "whisper-large-v3",
+    );
   });
 });

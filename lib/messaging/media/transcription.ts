@@ -35,10 +35,21 @@ const DEFAULT_MODEL = "whisper-1";
  * instalação o define, senão `whisper-1`. Uma função só para o worker (que
  * transcreve) e a tela de Provedores (que ANUNCIA o modelo) — duas leituras
  * separadas fariam a tela dizer `whisper-1` com outro modelo em uso.
+ *
+ * Com `TRANSCRIPTION_BASE_URL` preenchido e sem `TRANSCRIPTION_API_KEY`, o
+ * modelo do `.env` foi escrito para OUTRO serviço (o exemplo do `.env.example`
+ * é `whisper-large-v3`, do Groq), e a chamada vai à OpenAI com a chave da
+ * organização: pedir esse modelo lá quebraria no update uma transcrição que
+ * funciona com `whisper-1`. Nesse caso vale `whisper-1`, como antes.
  */
-export function modeloDeTranscricaoEmVigor(doAmbiente: string | undefined): string {
-  const m = (doAmbiente ?? "").trim();
-  return m === "" ? DEFAULT_MODEL : m;
+export function modeloDeTranscricaoEmVigor(doAmbiente: {
+  model: string | undefined;
+  apiKey: string | undefined;
+  baseUrl: string | undefined;
+}): string {
+  const m = (doAmbiente.model ?? "").trim();
+  const modeloDeOutroServico = (doAmbiente.baseUrl ?? "").trim() !== "" && (doAmbiente.apiKey ?? "").trim() === "";
+  return m === "" || modeloDeOutroServico ? DEFAULT_MODEL : m;
 }
 
 /**

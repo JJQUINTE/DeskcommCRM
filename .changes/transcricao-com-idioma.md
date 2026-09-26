@@ -12,4 +12,9 @@ chave para o `.env`. O motivo é medido: com o padrão, um áudio sem fala virav
 "Thanks for watching!" e "ya es caro" virava "ya es claro", e o assistente
 respondia ao que leu; com o idioma declarado e `gpt-transcribe`, os dois saem
 certos e o áudio sem fala sai vazio. A tela de Provedores passa a mostrar o
-modelo de transcrição que está em uso. Sem essas variáveis, nada muda.
+modelo de transcrição que está em uso. Sem essas variáveis, nada muda. Sem a
+chave própria, `TRANSCRIPTION_MODEL` só vale com `TRANSCRIPTION_BASE_URL` vazio:
+quem já tinha o modelo de outro serviço (Groq, por exemplo) no `.env` segue com
+`whisper-1` na OpenAI, como antes.
+
+Contribuição de @jmpo (#1723).
