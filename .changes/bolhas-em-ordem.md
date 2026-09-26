@@ -15,3 +15,7 @@ e pergunta em três mensagens. O tamanho máximo por bolha passa a valer só par
 o parágrafo que sozinho é longo demais: antes, parágrafos curtos eram juntados
 até esse tamanho, e com o padrão quase nenhuma resposta era dividida, enquanto
 com um valor baixo o resumo do pedido era cortado no meio de uma linha.
+O teto de mensagens por turno (`MAX_SENDS_PER_TURN`, padrão 3) vale também para
+as bolhas: o que passar dele segue junto na última, sem perder texto e na ordem.
+
+Contribuição de @jmpo (#1724).

@@ -3374,6 +3374,7 @@ async function executarTurnoDoAgente(
                     body,
                     agentConfig?.splitMessages ?? false,
                     agentConfig?.splitMaxChars ?? 600,
+                    Math.max(1, maxSendsPerTurn - seq),
                   )[0] ?? body,
                 // `processamentoMs` é a contribuição do #849 (@Teowfb): a pausa humana desconta o
                 // tempo que o turno JÁ gastou pensando, em vez de somar em cima dele. Sem este
@@ -3429,6 +3430,8 @@ async function executarTurnoDoAgente(
                   sendInBubbles(texto, {
                     enabled: agentConfig?.splitMessages ?? false,
                     maxChars: agentConfig?.splitMaxChars ?? 600,
+                    // O teto do turno vale para as bolhas: o que passa dele vai junto na última.
+                    maxBubbles: Math.max(1, maxSendsPerTurn - seq),
                     sleep,
                     jitter,
                     // A pausa humana do turno NÃO mora mais aqui: ela subiu para
